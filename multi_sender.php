@@ -1,9 +1,4 @@
 <?php
-// ============================================================
-//  MULTI-SENDER - RENDER VERSION
-//  Har ID ka apna x-super-properties use karega
-// ============================================================
-
 set_time_limit(0);
 ignore_user_abort(true);
 
@@ -14,7 +9,6 @@ session_save_path('/tmp');
 session_start();
 
 $CHANNEL_ID = $_SESSION['channelId'] ?? '';
-$INSTALLATION_ID = $_SESSION['installationId'] ?? '';
 $MULTI_IDS = $_SESSION['multi_ids'] ?? [];
 
 if (empty($MULTI_IDS) || empty($CHANNEL_ID)) {
@@ -23,23 +17,25 @@ if (empty($MULTI_IDS) || empty($CHANNEL_ID)) {
 
 $TOKENS = [];
 $X_SUPER_MAP = [];
+$INSTALL_MAP = [];
 $NAMES = [];
 
 foreach ($MULTI_IDS as $name => $data) {
     $TOKENS[$name] = $data['token'];
     $X_SUPER_MAP[$name] = $data['xSuper'] ?? '';
+    $INSTALL_MAP[$name] = $data['installId'] ?? '';
     $NAMES[$name] = $name;
 }
 
-// Session mein save for API
 $_SESSION['sender_config'] = [
     'channelId' => $CHANNEL_ID,
-    'installationId' => $INSTALLATION_ID,
     'tokens' => $TOKENS,
     'xSuperMap' => $X_SUPER_MAP,
+    'installMap' => $INSTALL_MAP,
     'names' => $NAMES,
 ];
 ?>
+<!-- HTML same hai -->
 <!-- HTML sama hai pehle jaisa -->
 <!DOCTYPE html>
 <html>
