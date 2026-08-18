@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 //  MULTI-SENDER - RENDER VERSION
-//  Session se IDs lega (index.php se)
+//  Har ID ka apna x-super-properties use karega
 // ============================================================
 
 set_time_limit(0);
@@ -13,33 +13,34 @@ if (!is_dir('/tmp')) {
 session_save_path('/tmp');
 session_start();
 
-// 🔥 Session se config lo
 $CHANNEL_ID = $_SESSION['channelId'] ?? '';
-$X_SUPER_PROPERTIES = $_SESSION['xSuperProperties'] ?? '';
 $INSTALLATION_ID = $_SESSION['installationId'] ?? '';
-$TOKENS = $_SESSION['multi_ids'] ?? [];
+$MULTI_IDS = $_SESSION['multi_ids'] ?? [];
 
-if (empty($TOKENS) || empty($CHANNEL_ID)) {
+if (empty($MULTI_IDS) || empty($CHANNEL_ID)) {
     die("<h2>❌ Pehle <a href='index.php'>index.php</a> mein IDs daalo aur Save karo!</h2>");
 }
 
-$MY_IDS = array_keys($TOKENS);
-$idKeys = array_keys($TOKENS);
-
+$TOKENS = [];
+$X_SUPER_MAP = [];
 $NAMES = [];
-foreach ($TOKENS as $name => $token) {
+
+foreach ($MULTI_IDS as $name => $data) {
+    $TOKENS[$name] = $data['token'];
+    $X_SUPER_MAP[$name] = $data['xSuper'] ?? '';
     $NAMES[$name] = $name;
 }
 
-// 🔥 Session mein save karo for API
+// Session mein save for API
 $_SESSION['sender_config'] = [
     'channelId' => $CHANNEL_ID,
-    'xSuperProperties' => $X_SUPER_PROPERTIES,
     'installationId' => $INSTALLATION_ID,
     'tokens' => $TOKENS,
+    'xSuperMap' => $X_SUPER_MAP,
     'names' => $NAMES,
 ];
 ?>
+<!-- HTML sama hai pehle jaisa -->
 <!DOCTYPE html>
 <html>
 <head>
