@@ -19,9 +19,9 @@ if (!$cfg) {
 }
 
 $CHANNEL_ID = $cfg['channelId'] ?? '';
-$INSTALLATION_ID = $cfg['installationId'] ?? '';
 $TOKENS = $cfg['tokens'] ?? [];
 $X_SUPER_MAP = $cfg['xSuperMap'] ?? [];
+$INSTALL_MAP = $cfg['installMap'] ?? [];
 $NAMES = $cfg['names'] ?? [];
 
 if (empty($TOKENS) || empty($CHANNEL_ID)) {
@@ -31,6 +31,7 @@ if (empty($TOKENS) || empty($CHANNEL_ID)) {
 
 $MY_IDS = array_keys($TOKENS);
 $idKeys = array_keys($TOKENS);
+
 
 // ============================================================
 //  🔥 SMART FUNCTIONS
@@ -87,8 +88,8 @@ function buildHeaders($token, $channelId, $xSuperProperties, $installationId) {
         'X-Debug-Options: bugReporterEnabled',
         'X-Discord-Locale: en-US',
         'X-Discord-Timezone: America/New_York',
-        'x-super-properties: ' . $xSuperProperties,  // 🔥 HAR ID KA ALAG
-        'x-installation-id: ' . $installationId,
+        'x-super-properties: ' . $xSuperProperties,
+        'x-installation-id: ' . $installationId,  // 🔥 HAR ID KA ALAG
     ];
 }
 
@@ -356,20 +357,20 @@ $speakerIndex = $_SESSION['speaker_index'] % count($idKeys);
 $speakerId = $idKeys[$speakerIndex];
 $_SESSION['speaker_index']++;
 
-// 🔥 HAR ID KA APNA TOKEN AUR X-SUPER-PROPERTIES
+// 🔥 HAR ID KA APNA TOKEN, X-SUPER, AUR INSTALLATION ID
 $token = $TOKENS[$speakerId];
 $xSuperProperties = $X_SUPER_MAP[$speakerId] ?? '';
+$installationId = $INSTALL_MAP[$speakerId] ?? '';
 $name = $NAMES[$speakerId] ?? $speakerId;
 
-// Agar kisi ID ka xSuper nahi hai toh error
-if (empty($xSuperProperties)) {
-    echo json_encode(['error' => "x-super-properties missing for $speakerId"]);
+if (empty($xSuperProperties) || empty($installationId)) {
+    echo json_encode(['error' => "Missing xSuper or installId for $speakerId"]);
     exit;
 }
 
 simulateTyping();
 
-$messages = getChannelMessages($token, $CHANNEL_ID, $xSuperProperties, $INSTALLATION_ID, 30);
+$messages = getChannelMessages($token, $CHANNEL_ID, $xSuperProperties, $installationId, 30);
 $users = findGenuineUsers($messages, $MY_IDS);
 
 if (empty($messages)) {
@@ -404,7 +405,7 @@ sleep($readTime);
 $reply = generateReply($userMessage, $userName);
 simulateTyping();
 
-$result = sendDiscordMessage($token, $CHANNEL_ID, $xSuperProperties, $INSTALLATION_ID, $reply, $replyTo);
+$result = sendDiscordMessage($token, $CHANNEL_ID, $xSuperProperties, $installationId, $reply, $replyTo);
 
 if ($result['success']) {
     echo json_encode([
