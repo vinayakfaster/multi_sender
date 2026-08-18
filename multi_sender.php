@@ -1,50 +1,44 @@
 <?php
 // ============================================================
-//  MULTI-SENDER - RENDER VERSION (NO INDEX.PHP NEEDED)
-//  Session save path fix for Render
+//  MULTI-SENDER - RENDER VERSION
+//  Session se IDs lega (index.php se)
 // ============================================================
 
 set_time_limit(0);
 ignore_user_abort(true);
 
-// 🔥 Render ke liye session path fix
 if (!is_dir('/tmp')) {
     mkdir('/tmp', 0777, true);
 }
 session_save_path('/tmp');
 session_start();
 
-// 🔥 CONFIG HARDCODED - index.php ki zarurat nahi
-$CHANNEL_ID = '1496031286291333257';
-$X_SUPER_PROPERTIES = 'eyJsb2NhdGlvbiI6ImNoYXRfaW5wdXQifQ==';  // Apna x-super-properties daalo
-$INSTALLATION_ID = '123456789';  // Apna installation id daalo
+// 🔥 Session se config lo
+$CHANNEL_ID = $_SESSION['channelId'] ?? '';
+$X_SUPER_PROPERTIES = $_SESSION['xSuperProperties'] ?? '';
+$INSTALLATION_ID = $_SESSION['installationId'] ?? '';
+$TOKENS = $_SESSION['multi_ids'] ?? [];
 
-// Check if config exists in session, otherwise use hardcoded
-if (!isset($_SESSION['sender_config'])) {
-    $_SESSION['sender_config'] = [
-        'name' => 'Trader',
-        'channelId' => $CHANNEL_ID,
-        'token' => '',  // API mein hardcoded hai
-        'xSuperProperties' => $X_SUPER_PROPERTIES,
-        'installationId' => $INSTALLATION_ID,
-        'maxMessages' => 500,
-        'delayPool' => '30, 35, 36, 87, 45, 52, 96, 200, 300, 120, 15, 36, 10',
-    ];
+if (empty($TOKENS) || empty($CHANNEL_ID)) {
+    die("<h2>❌ Pehle <a href='index.php'>index.php</a> mein IDs daalo aur Save karo!</h2>");
 }
 
-$cfg = $_SESSION['sender_config'] ?? null;
+$MY_IDS = array_keys($TOKENS);
+$idKeys = array_keys($TOKENS);
 
-if (!$cfg) {
-    die("<h2>❌ Config not found. Hardcoded values check karo.</h2>");
+$NAMES = [];
+foreach ($TOKENS as $name => $token) {
+    $NAMES[$name] = $name;
 }
 
-$X_SUPER_PROPERTIES = $cfg['xSuperProperties'] ?? '';
-$INSTALLATION_ID = $cfg['installationId'] ?? '';
-$CHANNEL_ID = $cfg['channelId'] ?? '';
-
-if (empty($X_SUPER_PROPERTIES) || empty($INSTALLATION_ID) || empty($CHANNEL_ID)) {
-    die("<h2>❌ x-super-properties, installation-id, channel-id missing! Hardcoded values check karo.</h2>");
-}
+// 🔥 Session mein save karo for API
+$_SESSION['sender_config'] = [
+    'channelId' => $CHANNEL_ID,
+    'xSuperProperties' => $X_SUPER_PROPERTIES,
+    'installationId' => $INSTALLATION_ID,
+    'tokens' => $TOKENS,
+    'names' => $NAMES,
+];
 ?>
 <!DOCTYPE html>
 <html>
@@ -147,6 +141,7 @@ if (empty($X_SUPER_PROPERTIES) || empty($INSTALLATION_ID) || empty($CHANNEL_ID))
         <div><span class="label">Channel:</span> <span class="value"><?= htmlspecialchars($CHANNEL_ID) ?></span></div>
         <div><span class="label">x-super-properties:</span> <span class="value <?= empty($X_SUPER_PROPERTIES) ? 'error' : '' ?>"><?= empty($X_SUPER_PROPERTIES) ? '❌ MISSING' : '✅ Loaded' ?></span></div>
         <div><span class="label">x-installation-id:</span> <span class="value <?= empty($INSTALLATION_ID) ? 'error' : '' ?>"><?= empty($INSTALLATION_ID) ? '❌ MISSING' : '✅ Loaded' ?></span></div>
+        <div><span class="label">IDs:</span> <span class="value"><?= count($TOKENS) ?> loaded</span></div>
     </div>
 
     <div class="stats-grid">
@@ -159,6 +154,7 @@ if (empty($X_SUPER_PROPERTIES) || empty($INSTALLATION_ID) || empty($CHANNEL_ID))
     <div class="log" id="log">
         <div class="info">🚀 Starting Multi-Sender...</div>
         <div class="info">📡 Channel: <?= htmlspecialchars($CHANNEL_ID) ?></div>
+        <div class="info">🆔 IDs: <?= implode(', ', array_keys($TOKENS)) ?></div>
         <div class="info">⏳ Waiting for genuine users...</div>
     </div>
 
@@ -170,6 +166,7 @@ if (empty($X_SUPER_PROPERTIES) || empty($INSTALLATION_ID) || empty($CHANNEL_ID))
             Status: <span id="statusText" style="color: #57f287;">Running</span>
         </div>
         <div>
+            <a href="index.php" class="btn btn-back" style="color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; margin-right:10px;">⬅ Back to Config</a>
             <button class="btn btn-stop" id="stopBtn">⏹ Stop</button>
         </div>
     </div>
