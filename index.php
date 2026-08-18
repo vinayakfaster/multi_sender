@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 //  INDEX.PHP - MULTI ID CONFIG FORM
-//  Har ID ka alag x-super-properties aur token
+//  Har ID ka alag token, x-super-properties, installation-id
 // ============================================================
 
 if (!is_dir('/tmp')) {
@@ -16,17 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = trim($_POST['name_' . $i] ?? '');
         $token = trim($_POST['token_' . $i] ?? '');
         $xSuper = trim($_POST['xSuper_' . $i] ?? '');
+        $installId = trim($_POST['installId_' . $i] ?? '');
         if (!empty($name) && !empty($token)) {
             $ids[$name] = [
                 'token' => $token,
-                'xSuper' => $xSuper
+                'xSuper' => $xSuper,
+                'installId' => $installId
             ];
         }
     }
     
     $_SESSION['multi_ids'] = $ids;
     $_SESSION['channelId'] = trim($_POST['channelId'] ?? '');
-    $_SESSION['installationId'] = trim($_POST['installationId'] ?? '');
     
     header('Location: multi_sender.php');
     exit;
@@ -34,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $ids = $_SESSION['multi_ids'] ?? [];
 $channelId = $_SESSION['channelId'] ?? '';
-$installId = $_SESSION['installationId'] ?? '';
 ?>
 <!DOCTYPE html>
 <html>
@@ -48,7 +48,7 @@ $installId = $_SESSION['installationId'] ?? '';
         padding: 20px; display: flex; justify-content: center; 
         min-height: 100vh;
     }
-    .container { max-width: 800px; width: 100%; }
+    .container { max-width: 900px; width: 100%; }
     .box { 
         background: #2b2d31; padding: 30px; border-radius: 16px; 
         width: 100%;
@@ -62,12 +62,15 @@ $installId = $_SESSION['installationId'] ?? '';
     }
     textarea { resize: vertical; min-height: 50px; font-size: 12px; }
     .id-row { 
-        display: flex; gap: 8px; margin-bottom: 8px; 
+        display: flex; gap: 6px; margin-bottom: 8px; 
         background: #1e1f22; padding: 10px; border-radius: 8px;
         flex-wrap: wrap;
+        align-items: center;
     }
-    .id-row input { flex: 1; min-width: 120px; }
-    .id-row .xsuper-input { flex: 2; min-width: 180px; }
+    .id-row input { flex: 1; min-width: 100px; }
+    .id-row .field-token { flex: 1.5; min-width: 150px; }
+    .id-row .field-xsuper { flex: 2; min-width: 180px; }
+    .id-row .field-install { flex: 1; min-width: 120px; }
     .btn { 
         width: 100%; padding: 14px; margin-top: 16px; 
         background: #5865f2; border: none; border-radius: 10px; 
@@ -77,7 +80,7 @@ $installId = $_SESSION['installationId'] ?? '';
     .remove-btn { 
         background: #ed4245; border: none; color: #fff; 
         padding: 0 12px; border-radius: 6px; cursor: pointer;
-        font-size: 18px;
+        font-size: 18px; height: 38px;
     }
     .remove-btn:hover { background: #c0353a; }
     .add-btn {
@@ -87,9 +90,15 @@ $installId = $_SESSION['installationId'] ?? '';
     }
     .add-btn:hover { background: #1a8a47; }
     .sub { color: #b5bac1; font-size: 13px; margin-bottom: 16px; }
-    .id-label { 
-        color: #b5bac1; font-size: 12px; margin-bottom: 2px; 
-        display: block;
+    .field-label { 
+        color: #8a8f98; font-size: 10px; display: block; 
+        margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .id-row .field-group { flex: 1; min-width: 100px; }
+    @media (max-width: 700px) {
+        .id-row { flex-direction: column; }
+        .id-row input { width: 100%; }
+        .remove-btn { align-self: flex-end; }
     }
 </style>
 </head>
@@ -97,17 +106,14 @@ $installId = $_SESSION['installationId'] ?? '';
 <div class="container">
     <div class="box">
         <h1>⚡ Multi ID Config</h1>
-        <p class="sub">Har ID ka <b>token</b> aur <b>x-super-properties</b> alag daalo.</p>
+        <p class="sub">Har ID ka <b>token</b>, <b>x-super-properties</b> aur <b>installation-id</b> alag daalo.</p>
 
         <form method="POST" id="configForm">
-            <label>Channel ID</label>
+            <label>Channel ID (Common for all)</label>
             <input name="channelId" value="<?= htmlspecialchars($channelId) ?>" placeholder="Channel ID" required>
 
-            <label>Installation ID (Common for all)</label>
-            <input name="installationId" value="<?= htmlspecialchars($installId) ?>" placeholder="Installation ID">
-
             <div style="margin: 16px 0 8px; display: flex; justify-content: space-between; align-items: center;">
-                <label style="margin:0; font-weight:700;">IDs, Tokens & x-super-properties</label>
+                <label style="margin:0; font-weight:700;">IDs, Tokens, x-super-properties & Installation ID</label>
             </div>
 
             <div id="idContainer">
@@ -116,17 +122,43 @@ $installId = $_SESSION['installationId'] ?? '';
                 $i = 0;
                 foreach ($ids as $name => $data): $i++; ?>
                 <div class="id-row" data-index="<?= $i ?>">
-                    <input name="name_<?= $i ?>" placeholder="Name" value="<?= htmlspecialchars($name) ?>" required style="flex:0.8;">
-                    <input name="token_<?= $i ?>" placeholder="Token" value="<?= htmlspecialchars($data['token']) ?>" required style="flex:1.5;">
-                    <input class="xsuper-input" name="xSuper_<?= $i ?>" placeholder="x-super-properties" value="<?= htmlspecialchars($data['xSuper'] ?? '') ?>" style="flex:2;">
+                    <div class="field-group" style="flex:0.6;">
+                        <span class="field-label">Name</span>
+                        <input name="name_<?= $i ?>" placeholder="Name" value="<?= htmlspecialchars($name) ?>" required>
+                    </div>
+                    <div class="field-group field-token">
+                        <span class="field-label">Token</span>
+                        <input name="token_<?= $i ?>" placeholder="Token" value="<?= htmlspecialchars($data['token']) ?>" required>
+                    </div>
+                    <div class="field-group field-xsuper">
+                        <span class="field-label">x-super-properties</span>
+                        <input name="xSuper_<?= $i ?>" placeholder="x-super-properties" value="<?= htmlspecialchars($data['xSuper'] ?? '') ?>">
+                    </div>
+                    <div class="field-group field-install">
+                        <span class="field-label">Installation ID</span>
+                        <input name="installId_<?= $i ?>" placeholder="Install ID" value="<?= htmlspecialchars($data['installId'] ?? '') ?>">
+                    </div>
                     <button type="button" class="remove-btn" onclick="removeRow(this)">✕</button>
                 </div>
                 <?php endforeach; ?>
                 <?php if ($i == 0): ?>
                 <div class="id-row" data-index="1">
-                    <input name="name_1" placeholder="Name" required style="flex:0.8;">
-                    <input name="token_1" placeholder="Token" required style="flex:1.5;">
-                    <input class="xsuper-input" name="xSuper_1" placeholder="x-super-properties" style="flex:2;">
+                    <div class="field-group" style="flex:0.6;">
+                        <span class="field-label">Name</span>
+                        <input name="name_1" placeholder="Name" required>
+                    </div>
+                    <div class="field-group field-token">
+                        <span class="field-label">Token</span>
+                        <input name="token_1" placeholder="Token" required>
+                    </div>
+                    <div class="field-group field-xsuper">
+                        <span class="field-label">x-super-properties</span>
+                        <input name="xSuper_1" placeholder="x-super-properties">
+                    </div>
+                    <div class="field-group field-install">
+                        <span class="field-label">Installation ID</span>
+                        <input name="installId_1" placeholder="Install ID">
+                    </div>
                     <button type="button" class="remove-btn" onclick="removeRow(this)">✕</button>
                 </div>
                 <?php endif; ?>
@@ -149,9 +181,22 @@ function addRow() {
     row.className = 'id-row';
     row.dataset.index = idCounter;
     row.innerHTML = `
-        <input name="name_${idCounter}" placeholder="Name" required style="flex:0.8;">
-        <input name="token_${idCounter}" placeholder="Token" required style="flex:1.5;">
-        <input class="xsuper-input" name="xSuper_${idCounter}" placeholder="x-super-properties" style="flex:2;">
+        <div class="field-group" style="flex:0.6;">
+            <span class="field-label">Name</span>
+            <input name="name_${idCounter}" placeholder="Name" required>
+        </div>
+        <div class="field-group field-token">
+            <span class="field-label">Token</span>
+            <input name="token_${idCounter}" placeholder="Token" required>
+        </div>
+        <div class="field-group field-xsuper">
+            <span class="field-label">x-super-properties</span>
+            <input name="xSuper_${idCounter}" placeholder="x-super-properties">
+        </div>
+        <div class="field-group field-install">
+            <span class="field-label">Installation ID</span>
+            <input name="installId_${idCounter}" placeholder="Install ID">
+        </div>
         <button type="button" class="remove-btn" onclick="removeRow(this)">✕</button>
     `;
     container.appendChild(row);
