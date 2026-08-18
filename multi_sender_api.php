@@ -1,11 +1,14 @@
 <?php
-
-
 error_reporting(0);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
 header('Content-Type: application/json');
+
+if (!is_dir('/tmp')) {
+    mkdir('/tmp', 0777, true);
+}
+session_save_path('/tmp');
 session_start();
 
 $cfg = $_SESSION['sender_config'] ?? null;
@@ -18,32 +21,21 @@ if (!$cfg) {
 $X_SUPER_PROPERTIES = $cfg['xSuperProperties'] ?? '';
 $INSTALLATION_ID = $cfg['installationId'] ?? '';
 $CHANNEL_ID = $cfg['channelId'] ?? '';
+$TOKENS = $cfg['tokens'] ?? [];
+$NAMES = $cfg['names'] ?? [];
 
 if (empty($X_SUPER_PROPERTIES) || empty($INSTALLATION_ID) || empty($CHANNEL_ID)) {
     echo json_encode(['error' => 'Missing headers in session.']);
     exit;
 }
 
-
-// ===== TOKENS =====
-$TOKENS = [
-    'hijecker'      => 'MTA2NTI5MTY0ODQxNTg0MjM4Ng.G6MHuG.CEzxQqozUKd1bkWdFI67pimzkoaNwXvo-0KQDA',   //timeout  24h
-    'beenuhacker'   => 'MTUzNzk3OTk4NjcyNjg4NzU1NQ.GjHVdY.hFrD_EydU9S1Dtyqkri4sZxtwnGapDGafoyTyE',  //timeout  
-    'auraplustrade' => 'MTUzNzk3NzkzMDE3NTQ4Mzk5NQ.GqU1mO.SYrcNgfxPUwY6NUEiLPZVuWKRDNJT0XSjaDb8A',///////new accc 24h
-    'iamhisboy'     => 'MTQ1OTg3MTUzNTMwMDA4Mzc3Mg.GIrPpk.RkngpbNSI1PPoIohHvD_COZQjXI2nbfJilMxjY',  //timeout  24h
-    'z3r0420'     => 'ODU5MTI4MDE4NjkzNTIxNDM5.G4No92.Mi7P_wM_3UUhjkYuUr2b57jCuoQ1vMSmGSeXoM',  //timeout
-];
+if (empty($TOKENS)) {
+    echo json_encode(['error' => 'No tokens found in session.']);
+    exit;
+}
 
 $MY_IDS = array_keys($TOKENS);
 $idKeys = array_keys($TOKENS);
-
-$NAMES = [
-    'hijecker'      => 'hijecker',
-    'beenuhacker'   => 'Beenu',
-    'auraplustrade' => 'trader',
-    'iamhisboy_72835'     => 'I am he',
-    'z3r0420'       => 'z3r0420',
-]; 
 
 // ============================================================
 //  🔥 SMART FUNCTIONS - UNDETECTABLE
@@ -53,43 +45,28 @@ function pick($arr) {
     return $arr[array_rand($arr)];
 }
 
-// 🔥 HUMAN-LIKE DELAY - Random with variation
 function getRandomDelay() {
-    // Normal human typing speed: 8-20 seconds
     $base = rand(8, 20);
-    
-    // 10% chance of human pause (thinking/reading)
     if (rand(1, 10) == 1) {
         $base += rand(15, 45);
     }
-    
-    // 5% chance of sudden distraction (long pause)
     if (rand(1, 20) == 1) {
         $base += rand(30, 40);
     }
-    
     return $base;
 }
 
-// 🔥 NATURAL TYPING - Different every time
 function simulateTyping() {
-    // 2-8 seconds, random variation
     $typingTime = rand(2, 8);
-    
-    // Sometimes type faster (like human)
     if (rand(1, 3) == 1) {
         $typingTime = rand(1, 4);
     }
-    
-    // Sometimes type slower (thinking)
     if (rand(1, 5) == 1) {
         $typingTime = rand(5, 12);
     }
-    
     sleep($typingTime);
 }
 
-// 🔥 SMART HEADERS - Rotate User-Agent
 function buildHeaders($token, $channelId, $xSuperProperties, $installationId) {
     $userAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
@@ -179,14 +156,9 @@ function findGenuineUsers($messages, $myIds) {
     return $genuineMessages;
 }
 
-// ============================================================
-//  🔥 SMART REPLY GENERATOR
-// ============================================================
-
 function generateReply($userMessage, $userName) {
     $userMessageLower = strtolower($userMessage);
     
-    // Check if question
     $questionWords = ['?', 'how', 'what', 'why', 'when', 'who', 'which', 'is', 'are', 'do', 'does', 'can', 'will'];
     $isQuestion = false;
     foreach ($questionWords as $word) {
@@ -196,171 +168,155 @@ function generateReply($userMessage, $userName) {
         }
     }
     
-    // 🔥 NATURAL REPLIES - Short and long mix
     $replies = [];
     
-   if ($isQuestion) {
-    $replies = [
-        // ===== HINGLISH WITH GRAMMAR MISTAKES =====
-        "Bhai @$userName, good quesn! Platform actually solid h.",
-        "Arey @$userName, ladder system thoda confusng h pehle but samaj aa jayga.",
-        "Dekho @$userName, withdrawal min ab $50 h.",
-        "Mujhe bhi same doubt tha @$userName, but founders actually sunte h community ki.",
-        "Baat toh shi h @$userName, CRSH me crypto, sports, sab h.",
-        "Mne bhi same socha tha @$userName, referral program kafi generous h.",
-        "Thnx @$userName! UI bhot clean h navigate krna easy h.",
-        "Acha sawaal h @$userName! Community actually bhot helpful h.",
-        "Shi pakda @$userName! Platform constntly improve ho rha h.",
-        "Bhai @$userName, pehle mujhe bhi confusion thi, but ab samaj aya.",
-        "Arre @$userName, main bhi CRSH use kr rha hu weeks se, acha h.",
-        "@$userName yaar, mera bhi yahi quesn tha!",
-        "Mujhe bhi pura sure nhi h @$userName, but I think aise hi kaam krta h.",
-        "Check krta hu @$userName, min $50 h shayd ab.",
-        
-        // ===== SHORT + TYPOS =====
-        "Hn bhai @$userName, shi kha! Platform actually solid h.",
-        "@$userName shi baat h, community kafi helpful h.",
-        "Thnx yaar @$userName!",
-        "Mujhe bhi aisa hi lgta h @$userName, utility overlooked h.",
-        "Shi h @$userName, future bright lg rha h.",
-        "Same feelng @$userName, team dedicated h.",
-        "Intrestng @$userName, CRSH mainstream ho rha h dheere dheere.",
-        "Samaj gya @$userName, rewards actually worth it h.",
-        "Point toh shi h @$userName!",
-        "Acha observatn h @$userName, main bhi bullish hu long-term.",
-        "Support krta hu @$userName, founders actually sunte h.",
-        "Chinta mt kar @$userName, time k sath sab samaj aa jayga.",
-        "Keep going @$userName, jitna predict kroge utna better hoge.",
-        "Yahi spirit chahiye @$userName, CRSH bhot bda banega.",
-        "Acha kr rhe ho @$userName, community h help krne k liye.",
-        "Positive rho @$userName, future promisng h.",
-        "Hey @$userName! CRSH actually solid h ngl.",
-        "Yo @$userName! Ladder system try kiya?",
-        "Kya haal h @$userName! Live prediction addctv h.",
-        "Hi @$userName! Mne months se use kr rha hu CRSH.",
-        "Waah @$userName! Mne bhi friends ko bta rha hu CRSH k bare me.",
-        "Mujhe bhi pasnd aaya @$userName, platform user-friendly h.",
-        "Acha lga sunke @$userName, team continuously improve kr rhi h.",
-        "Fantastc @$userName! Shi choice h.",
-        "Khushi hui sunke @$userName, community hi heart h CRSH ki.",
-        
-        // ===== WITH EMOJI + TYPOS =====
-        "Bhai @$userName, shi pakda 🔥 platform actually solid h!",
-        "Arey @$userName, ladder system thoda confusng h but worth it h 💪",
-        "Dekh @$userName, withdrawal min $50 h ab 🤑",
-        "Mera bhi yahi quesn tha @$userName, but founders sunte h 🙌",
-        "Shi h @$userName, CRSH me sab kuch h! 🚀",
-        "Mne bhi yahi socha @$userName, referral program 🔥 h",
-        "Thnx @$userName! UI bhot clean h ✨",
-        "Acha sawaal @$userName! Community 🤝 bhot helpful h.",
-        "Shi pakda @$userName! Platform 📈 improve ho rha h.",
-        "Bhai @$userName, pehle mujhe bhi confusion thi 😅",
-        "Arre @$userName, main weeks se use kr rha hu 💯",
-        "@$userName yaar, mera bhi yahi sawaal tha 🤔",
-        "Mujhe bhi pura sure nhi @$userName, but aise hi kaam krta h shayd 🤷",
-        "Check krta hu @$userName, min $50 h lagta h ✅",
-        
-        // ===== SUPER SHORT (1-2 lines) =====
-        "Hn @$userName, shi kha! 💯",
-        "@$userName shi baat h 👍",
-        "Thnx yaar @$userName 🙏",
-        "Mujhe bhi aisa lgta h @$userName 💪",
-        "Shi h @$userName 🔥",
-        "Same feelng @$userName ✨",
-        "Intrestng @$userName 🤔",
-        "Samaj gya @$userName ✅",
-        "Shi pakda @$userName 🎯",
-        "Acha observatn @$userName 👀",
-        "Support @$userName 🤝",
-        "Chinta mt kar @$userName 💪",
-        "Keep going @$userName 🚀",
-        "Yahi spirit @$userName 🔥",
-        "Acha kr rhe ho @$userName 👏",
-        "Positive rho @$userName 🌟",
-        "Hey @$userName! 👋",
-        "Yo @$userName! 🙌",
-        "Kya haal @$userName! 😎",
-        "Hi @$userName! ✌️",
-        "Waah @$userName! 🔥",
-        "Pasnd aaya @$userName ❤️",
-        "Acha lga @$userName 😊",
-        "Fantastc @$userName! 🎉",
-        "Khushi hui @$userName 🤗",
-    ];
-}
-
-// Short replies with grammar mistakes
-if (empty($replies) || rand(1, 3) == 1) {
-    $shortReplies = [
-        // ===== PURE HINGLISH WITH MISTAKES =====
-        "Shi kha @$userName! CRSH actually solid h.",
-        "Shi baat @$userName, community helpful h.",
-        "Thnx yaar @$userName!",
-        "Mujhe bhi aisa lgta h @$userName, utility overlooked h.",
-        "Shi h @$userName, future bright lg rha h.",
-        "Same feelng @$userName, team dedicated h.",
-        "Intrestng @$userName, CRSH mainstream ho rha h.",
-        "Samaj gya @$userName, rewards worth it h.",
-        "Point shi h @$userName!",
-        "Acha observatn @$userName, main bullish hu.",
-        "Support @$userName, founders sunte h.",
-        "Chinta mt kar @$userName, time k sath samaj aa jayga.",
-        "Keep going @$userName, better hoge.",
-        "Yahi spirit @$userName, CRSH bda banega.",
-        "Acha kr rhe ho @$userName, community h help k liye.",
-        "Positive rho @$userName, future promisng h.",
-        
-        // ===== WITH EMOJI + MISTAKES =====
-        "Shi kha @$userName! 💯",
-        "Shi baat @$userName 👍",
-        "Thnx yaar @$userName 🙏",
-        "Mujhe bhi aisa lgta h @$userName 💪",
-        "Shi h @$userName 🔥",
-        "Same feelng @$userName ✨",
-        "Intrestng @$userName 🤔",
-        "Samaj gya @$userName ✅",
-        "Shi pakda @$userName 🎯",
-        "Acha observatn @$userName 👀",
-        "Support @$userName 🤝",
-        "Chinta mt kar @$userName 💪",
-        "Keep going @$userName 🚀",
-        "Yahi spirit @$userName 🔥",
-        "Acha kr rhe ho @$userName 👏",
-        "Positive rho @$userName 🌟",
-        
-        // ===== CASUAL + TYPOS =====
-        "Hey @$userName! CRSH actually solid h ngl.",
-        "Yo @$userName! Ladder system try kiya?",
-        "Kya haal @$userName! Live prediction addctv h.",
-        "Hi @$userName! Months se use kr rha hu.",
-        "Waah @$userName! Friends ko bhi bta rha hu.",
-        "Pasnd aaya @$userName, user-friendly h.",
-        "Acha lga @$userName, team improve kr rhi h.",
-        "Fantastc @$userName! Shi choice.",
-        "Khushi hui @$userName, community heart h CRSH ki.",
-        
-        // ===== VERY SHORT (5-6 words) =====
-        "Shi kha bhai @$userName 💯",
-        "Sahi baat h @$userName 👍",
-        "Thnx yaar @$userName 🙏",
-        "Mujhe bhi aisa lgta h 💪",
-        "Bilkul shi @$userName 🔥",
-        "Same here @$userName ✨",
-        "Intrestng point @$userName 🤔",
-        "Samaj gya bhai ✅",
-        "Shi pakda @$userName 🎯",
-        "Acha observation h 👀",
-        "Support krta hu @$userName 🤝",
-        "Chinta mt kar bhai 💪",
-        "Keep going yaar 🚀",
-        "Yahi toh baat h 🔥",
-        "Acha kr rhe ho 👏",
-        "Positive rho bhai 🌟",
-    ];
-    $replies = array_merge($replies, $shortReplies);
-}
-
-return pick($replies);
+    if ($isQuestion) {
+        $replies = [
+            "Bhai @$userName, good quesn! Platform actually solid h.",
+            "Arey @$userName, ladder system thoda confusng h pehle but samaj aa jayga.",
+            "Dekho @$userName, withdrawal min ab $50 h.",
+            "Mujhe bhi same doubt tha @$userName, but founders actually sunte h community ki.",
+            "Baat toh shi h @$userName, CRSH me crypto, sports, sab h.",
+            "Mne bhi same socha tha @$userName, referral program kafi generous h.",
+            "Thnx @$userName! UI bhot clean h navigate krna easy h.",
+            "Acha sawaal h @$userName! Community actually bhot helpful h.",
+            "Shi pakda @$userName! Platform constntly improve ho rha h.",
+            "Bhai @$userName, pehle mujhe bhi confusion thi, but ab samaj aya.",
+            "Arre @$userName, main bhi CRSH use kr rha hu weeks se, acha h.",
+            "@$userName yaar, mera bhi yahi quesn tha!",
+            "Mujhe bhi pura sure nhi h @$userName, but I think aise hi kaam krta h.",
+            "Check krta hu @$userName, min $50 h shayd ab.",
+            "Hn bhai @$userName, shi kha! Platform actually solid h.",
+            "@$userName shi baat h, community kafi helpful h.",
+            "Thnx yaar @$userName!",
+            "Mujhe bhi aisa hi lgta h @$userName, utility overlooked h.",
+            "Shi h @$userName, future bright lg rha h.",
+            "Same feelng @$userName, team dedicated h.",
+            "Intrestng @$userName, CRSH mainstream ho rha h dheere dheere.",
+            "Samaj gya @$userName, rewards actually worth it h.",
+            "Point toh shi h @$userName!",
+            "Acha observatn h @$userName, main bhi bullish hu long-term.",
+            "Support krta hu @$userName, founders actually sunte h.",
+            "Chinta mt kar @$userName, time k sath sab samaj aa jayga.",
+            "Keep going @$userName, jitna predict kroge utna better hoge.",
+            "Yahi spirit chahiye @$userName, CRSH bhot bda banega.",
+            "Acha kr rhe ho @$userName, community h help krne k liye.",
+            "Positive rho @$userName, future promisng h.",
+            "Hey @$userName! CRSH actually solid h ngl.",
+            "Yo @$userName! Ladder system try kiya?",
+            "Kya haal h @$userName! Live prediction addctv h.",
+            "Hi @$userName! Mne months se use kr rha hu CRSH.",
+            "Waah @$userName! Mne bhi friends ko bta rha hu CRSH k bare me.",
+            "Mujhe bhi pasnd aaya @$userName, platform user-friendly h.",
+            "Acha lga sunke @$userName, team continuously improve kr rhi h.",
+            "Fantastc @$userName! Shi choice h.",
+            "Khushi hui sunke @$userName, community hi heart h CRSH ki.",
+            "Bhai @$userName, shi pakda 🔥 platform actually solid h!",
+            "Arey @$userName, ladder system thoda confusng h but worth it h 💪",
+            "Dekh @$userName, withdrawal min $50 h ab 🤑",
+            "Mera bhi yahi quesn tha @$userName, but founders sunte h 🙌",
+            "Shi h @$userName, CRSH me sab kuch h! 🚀",
+            "Mne bhi yahi socha @$userName, referral program 🔥 h",
+            "Thnx @$userName! UI bhot clean h ✨",
+            "Acha sawaal @$userName! Community 🤝 bhot helpful h.",
+            "Shi pakda @$userName! Platform 📈 improve ho rha h.",
+            "Bhai @$userName, pehle mujhe bhi confusion thi 😅",
+            "Arre @$userName, main weeks se use kr rha hu 💯",
+            "@$userName yaar, mera bhi yahi sawaal tha 🤔",
+            "Mujhe bhi pura sure nhi @$userName, but aise hi kaam krta h shayd 🤷",
+            "Check krta hu @$userName, min $50 h lagta h ✅",
+            "Hn @$userName, shi kha! 💯",
+            "@$userName shi baat h 👍",
+            "Thnx yaar @$userName 🙏",
+            "Mujhe bhi aisa lgta h @$userName 💪",
+            "Shi h @$userName 🔥",
+            "Same feelng @$userName ✨",
+            "Intrestng @$userName 🤔",
+            "Samaj gya @$userName ✅",
+            "Shi pakda @$userName 🎯",
+            "Acha observatn @$userName 👀",
+            "Support @$userName 🤝",
+            "Chinta mt kar @$userName 💪",
+            "Keep going @$userName 🚀",
+            "Yahi spirit @$userName 🔥",
+            "Acha kr rhe ho @$userName 👏",
+            "Positive rho @$userName 🌟",
+            "Hey @$userName! 👋",
+            "Yo @$userName! 🙌",
+            "Kya haal @$userName! 😎",
+            "Hi @$userName! ✌️",
+            "Waah @$userName! 🔥",
+            "Pasnd aaya @$userName ❤️",
+            "Acha lga @$userName 😊",
+            "Fantastc @$userName! 🎉",
+            "Khushi hui @$userName 🤗",
+        ];
+    }
+    
+    if (empty($replies) || rand(1, 3) == 1) {
+        $shortReplies = [
+            "Shi kha @$userName! CRSH actually solid h.",
+            "Shi baat @$userName, community helpful h.",
+            "Thnx yaar @$userName!",
+            "Mujhe bhi aisa lgta h @$userName, utility overlooked h.",
+            "Shi h @$userName, future bright lg rha h.",
+            "Same feelng @$userName, team dedicated h.",
+            "Intrestng @$userName, CRSH mainstream ho rha h.",
+            "Samaj gya @$userName, rewards worth it h.",
+            "Point shi h @$userName!",
+            "Acha observatn @$userName, main bullish hu.",
+            "Support @$userName, founders sunte h.",
+            "Chinta mt kar @$userName, time k sath samaj aa jayga.",
+            "Keep going @$userName, better hoge.",
+            "Yahi spirit @$userName, CRSH bda banega.",
+            "Acha kr rhe ho @$userName, community h help k liye.",
+            "Positive rho @$userName, future promisng h.",
+            "Shi kha @$userName! 💯",
+            "Shi baat @$userName 👍",
+            "Thnx yaar @$userName 🙏",
+            "Mujhe bhi aisa lgta h @$userName 💪",
+            "Shi h @$userName 🔥",
+            "Same feelng @$userName ✨",
+            "Intrestng @$userName 🤔",
+            "Samaj gya @$userName ✅",
+            "Shi pakda @$userName 🎯",
+            "Acha observatn @$userName 👀",
+            "Support @$userName 🤝",
+            "Chinta mt kar @$userName 💪",
+            "Keep going @$userName 🚀",
+            "Yahi spirit @$userName 🔥",
+            "Acha kr rhe ho @$userName 👏",
+            "Positive rho @$userName 🌟",
+            "Hey @$userName! CRSH actually solid h ngl.",
+            "Yo @$userName! Ladder system try kiya?",
+            "Kya haal @$userName! Live prediction addctv h.",
+            "Hi @$userName! Months se use kr rha hu.",
+            "Waah @$userName! Friends ko bhi bta rha hu.",
+            "Pasnd aaya @$userName, user-friendly h.",
+            "Acha lga @$userName, team improve kr rhi h.",
+            "Fantastc @$userName! Shi choice.",
+            "Khushi hui @$userName, community heart h CRSH ki.",
+            "Shi kha bhai @$userName 💯",
+            "Sahi baat h @$userName 👍",
+            "Thnx yaar @$userName 🙏",
+            "Mujhe bhi aisa lgta h 💪",
+            "Bilkul shi @$userName 🔥",
+            "Same here @$userName ✨",
+            "Intrestng point @$userName 🤔",
+            "Samaj gya bhai ✅",
+            "Shi pakda @$userName 🎯",
+            "Acha observation h 👀",
+            "Support krta hu @$userName 🤝",
+            "Chinta mt kar bhai 💪",
+            "Keep going yaar 🚀",
+            "Yahi toh baat h 🔥",
+            "Acha kr rhe ho 👏",
+            "Positive rho bhai 🌟",
+        ];
+        $replies = array_merge($replies, $shortReplies);
+    }
+    
+    return pick($replies);
 }
 
 function sendDiscordMessage($token, $channelId, $xSuperProperties, $installationId, $message, $replyTo = null) {
@@ -403,20 +359,16 @@ function sendDiscordMessage($token, $channelId, $xSuperProperties, $installation
 }
 
 // ============================================================
-//  🔥 SMART MAIN EXECUTION - ROTATE DELAYS
+//  MAIN EXECUTION
 // ============================================================
 
 if (!isset($_SESSION['speaker_index'])) {
     $_SESSION['speaker_index'] = 0;
 }
 
-// Skip IDs that are muted/blocked
 $availableIds = [];
 foreach ($idKeys as $key) {
-    // Skip muted IDs
-    if ($key === 'iamhisboy') {
-        continue; // 2 hours mute
-    }
+    // Skip muted IDs (if any)
     $availableIds[] = $key;
 }
 
@@ -430,9 +382,8 @@ $speakerId = $availableIds[$speakerIndex];
 $_SESSION['speaker_index']++;
 
 $token = $TOKENS[$speakerId];
-$name = $NAMES[$speakerId];
+$name = $NAMES[$speakerId] ?? $speakerId;
 
-// 🔥 Human typing before fetch
 simulateTyping();
 
 $messages = getChannelMessages($token, $CHANNEL_ID, $X_SUPER_PROPERTIES, $INSTALLATION_ID, 30);
@@ -463,23 +414,18 @@ if (empty($users)) {
     exit;
 }
 
-// Pick random user
 $target = $users[array_rand($users)];
 $replyTo = $target['message_id'];
 $userName = $target['name'];
 $userMessage = $target['content'];
 
-// 🔥 Read message (human behavior)
 $readTime = rand(4, 12);
 sleep($readTime);
 
-// Generate reply
 $reply = generateReply($userMessage, $userName);
 
-// 🔥 Type reply (human behavior)
 simulateTyping();
 
-// Send reply
 $result = sendDiscordMessage($token, $CHANNEL_ID, $X_SUPER_PROPERTIES, $INSTALLATION_ID, $reply, $replyTo);
 
 if ($result['success']) {
@@ -512,3 +458,4 @@ if ($result['success']) {
         ]);
     }
 }
+?>
