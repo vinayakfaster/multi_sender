@@ -26,6 +26,24 @@ if (empty($X_SUPER_PROPERTIES) || empty($INSTALLATION_ID) || empty($CHANNEL_ID))
 
 
 // ===== TOKENS =====
+$TOKENS = [
+    'hijecker'      => 'MTA2NTI5MTY0ODQxNTg0MjM4Ng.G6MHuG.CEzxQqozUKd1bkWdFI67pimzkoaNwXvo-0KQDA',   //timeout  24h
+    'beenuhacker'   => 'MTUzNzk3OTk4NjcyNjg4NzU1NQ.GjHVdY.hFrD_EydU9S1Dtyqkri4sZxtwnGapDGafoyTyE',  //timeout  
+    'auraplustrade' => 'MTUzNzk3NzkzMDE3NTQ4Mzk5NQ.GqU1mO.SYrcNgfxPUwY6NUEiLPZVuWKRDNJT0XSjaDb8A',///////new accc 24h
+    'iamhisboy'     => 'MTQ1OTg3MTUzNTMwMDA4Mzc3Mg.GIrPpk.RkngpbNSI1PPoIohHvD_COZQjXI2nbfJilMxjY',  //timeout  24h
+    'z3r0420'     => 'ODU5MTI4MDE4NjkzNTIxNDM5.G4No92.Mi7P_wM_3UUhjkYuUr2b57jCuoQ1vMSmGSeXoM',  //timeout
+];
+
+$MY_IDS = array_keys($TOKENS);
+$idKeys = array_keys($TOKENS);
+
+$NAMES = [
+    'hijecker'      => 'hijecker',
+    'beenuhacker'   => 'Beenu',
+    'auraplustrade' => 'trader',
+    'iamhisboy_72835'     => 'I am he',
+    'z3r0420'       => 'z3r0420',
+]; 
 
 // ============================================================
 //  🔥 SMART FUNCTIONS - UNDETECTABLE
