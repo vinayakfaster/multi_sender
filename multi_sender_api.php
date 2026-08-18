@@ -14,23 +14,18 @@ session_start();
 $cfg = $_SESSION['sender_config'] ?? null;
 
 if (!$cfg) {
-    echo json_encode(['error' => 'Config not found. Open index.php first.']);
+    echo json_encode(['error' => 'Config not found.']);
     exit;
 }
 
-$X_SUPER_PROPERTIES = $cfg['xSuperProperties'] ?? '';
-$INSTALLATION_ID = $cfg['installationId'] ?? '';
 $CHANNEL_ID = $cfg['channelId'] ?? '';
+$INSTALLATION_ID = $cfg['installationId'] ?? '';
 $TOKENS = $cfg['tokens'] ?? [];
+$X_SUPER_MAP = $cfg['xSuperMap'] ?? [];
 $NAMES = $cfg['names'] ?? [];
 
-if (empty($X_SUPER_PROPERTIES) || empty($INSTALLATION_ID) || empty($CHANNEL_ID)) {
-    echo json_encode(['error' => 'Missing headers in session.']);
-    exit;
-}
-
-if (empty($TOKENS)) {
-    echo json_encode(['error' => 'No tokens found in session.']);
+if (empty($TOKENS) || empty($CHANNEL_ID)) {
+    echo json_encode(['error' => 'Missing config.']);
     exit;
 }
 
@@ -38,7 +33,7 @@ $MY_IDS = array_keys($TOKENS);
 $idKeys = array_keys($TOKENS);
 
 // ============================================================
-//  🔥 SMART FUNCTIONS - UNDETECTABLE
+//  🔥 SMART FUNCTIONS
 // ============================================================
 
 function pick($arr) {
@@ -47,39 +42,30 @@ function pick($arr) {
 
 function getRandomDelay() {
     $base = rand(8, 20);
-    if (rand(1, 10) == 1) {
-        $base += rand(15, 45);
-    }
-    if (rand(1, 20) == 1) {
-        $base += rand(30, 40);
-    }
+    if (rand(1, 10) == 1) $base += rand(15, 45);
+    if (rand(1, 20) == 1) $base += rand(30, 40);
     return $base;
 }
 
 function simulateTyping() {
     $typingTime = rand(2, 8);
-    if (rand(1, 3) == 1) {
-        $typingTime = rand(1, 4);
-    }
-    if (rand(1, 5) == 1) {
-        $typingTime = rand(5, 12);
-    }
+    if (rand(1, 3) == 1) $typingTime = rand(1, 4);
+    if (rand(1, 5) == 1) $typingTime = rand(5, 12);
     sleep($typingTime);
 }
 
+// 🔥 HAR ID KA APNA X-SUPER-PROPERTIES USE HOTA HAI
 function buildHeaders($token, $channelId, $xSuperProperties, $installationId) {
     $userAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
     ];
     
     $secChUa = [
         '"Not=A?Brand";v="99", "Chromium";v="130", "Google Chrome";v="130"',
         '"Not=A?Brand";v="99", "Chromium";v="129", "Google Chrome";v="129"',
-        '"Not=A?Brand";v="99", "Chromium";v="128", "Google Chrome";v="128"',
     ];
     
     return [
@@ -101,7 +87,7 @@ function buildHeaders($token, $channelId, $xSuperProperties, $installationId) {
         'X-Debug-Options: bugReporterEnabled',
         'X-Discord-Locale: en-US',
         'X-Discord-Timezone: America/New_York',
-        'x-super-properties: ' . $xSuperProperties,
+        'x-super-properties: ' . $xSuperProperties,  // 🔥 HAR ID KA ALAG
         'x-installation-id: ' . $installationId,
     ];
 }
@@ -366,27 +352,24 @@ if (!isset($_SESSION['speaker_index'])) {
     $_SESSION['speaker_index'] = 0;
 }
 
-$availableIds = [];
-foreach ($idKeys as $key) {
-    // Skip muted IDs (if any)
-    $availableIds[] = $key;
-}
+$speakerIndex = $_SESSION['speaker_index'] % count($idKeys);
+$speakerId = $idKeys[$speakerIndex];
+$_SESSION['speaker_index']++;
 
-if (empty($availableIds)) {
-    echo json_encode(['error' => 'All IDs are muted. Try again later.']);
+// 🔥 HAR ID KA APNA TOKEN AUR X-SUPER-PROPERTIES
+$token = $TOKENS[$speakerId];
+$xSuperProperties = $X_SUPER_MAP[$speakerId] ?? '';
+$name = $NAMES[$speakerId] ?? $speakerId;
+
+// Agar kisi ID ka xSuper nahi hai toh error
+if (empty($xSuperProperties)) {
+    echo json_encode(['error' => "x-super-properties missing for $speakerId"]);
     exit;
 }
 
-$speakerIndex = $_SESSION['speaker_index'] % count($availableIds);
-$speakerId = $availableIds[$speakerIndex];
-$_SESSION['speaker_index']++;
-
-$token = $TOKENS[$speakerId];
-$name = $NAMES[$speakerId] ?? $speakerId;
-
 simulateTyping();
 
-$messages = getChannelMessages($token, $CHANNEL_ID, $X_SUPER_PROPERTIES, $INSTALLATION_ID, 30);
+$messages = getChannelMessages($token, $CHANNEL_ID, $xSuperProperties, $INSTALLATION_ID, 30);
 $users = findGenuineUsers($messages, $MY_IDS);
 
 if (empty($messages)) {
@@ -405,11 +388,7 @@ if (empty($users)) {
     
     echo json_encode([
         'error' => 'No genuine users found',
-        'debug' => [
-            'total' => $totalMessages,
-            'my' => $myMessages,
-            'genuine' => $totalMessages - $myMessages
-        ]
+        'debug' => ['total' => $totalMessages, 'my' => $myMessages, 'genuine' => $totalMessages - $myMessages]
     ]);
     exit;
 }
@@ -423,10 +402,9 @@ $readTime = rand(4, 12);
 sleep($readTime);
 
 $reply = generateReply($userMessage, $userName);
-
 simulateTyping();
 
-$result = sendDiscordMessage($token, $CHANNEL_ID, $X_SUPER_PROPERTIES, $INSTALLATION_ID, $reply, $replyTo);
+$result = sendDiscordMessage($token, $CHANNEL_ID, $xSuperProperties, $INSTALLATION_ID, $reply, $replyTo);
 
 if ($result['success']) {
     echo json_encode([
